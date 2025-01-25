@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Agent {
+  id                 String         @id @default(uuid())
+  email              String         @unique
+  password           String
+  name               String
+  address            String
+  phone              String
+  profile            String
+  type_of_employment String
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  AgentSales         Sales[]
+  AgentClients       AgentClients[]
+}
+
+model Clients {
+  id             String           @id @default(uuid())
+  shop_name      String
+  owner_name     String
+  address        String
+  phone          String
+  email          String           @unique
+  logo           String
+  googleAPI      String
+  password       String
+  ShopSales      Sales[]
+  AgentClients   AgentClients[]
+  ClientPlan     ClientPlans?
+  ClientPayments ClientPayments[]
+}
+
+model Sales {
+  id        String  @id @default(uuid())
+  agent_id  String
+  agent     Agent   @relation(fields: [agent_id], references: [id])
+  client_id String
+  client    Clients @relation(fields: [client_id], references: [id])
+
+  amount    Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AgentClients {
+  id        String  @id @default(uuid())
+  agent_id  String
+  agent     Agent   @relation(fields: [agent_id], references: [id])
+  client_id String
+  client    Clients @relation(fields: [client_id], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ClientPlans {
+  id        String   @id @default(uuid())
+  client_id String   @unique
+  client    Clients  @relation(fields: [client_id], references: [id])
+  plan_id   String   @unique
+  plan      Plans    @relation(fields: [plan_id], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Plans {
+  id          String       @id @default(uuid())
+  title       String
+  price       String
+  level       Int
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ClientPlans ClientPlans?
+}
+
+model ClientPayments {
+  id             String   @id @default(uuid())
+  client_id      String
+  client         Clients  @relation(fields: [client_id], references: [id])
+  amount         Decimal
+  payment_date   DateTime @default(now())
+  payment_type   String // e.g., "credit_card", "bank_transfer"
+  status         String   @default("pending") // "completed", "pending", "failed"
+  invoice_id     String?
+  transaction_id String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+}
