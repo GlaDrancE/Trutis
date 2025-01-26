@@ -10,6 +10,7 @@ function Clients() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [profile, setProfile] = useState('');
   const [selectedPlan, setSelectedPlan] = useState('');
+  const [isPlansLoad, setIsPlanLoad] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<Client>({
@@ -20,30 +21,36 @@ function Clients() {
     phone: '',
     address: '',
     plan_id: '',
+    plan_title: '',
     googleAPI: '',
     logo: null,
   });
   const [editingId, setEditingId] = useState<string | null | undefined>(null);
 
-  useEffect(() => {
-    if (clients.length > 0 && plans.length <= 0) {
-      loadPlans();
-    }
-  }, [clients, plans])
+  // useEffect(() => {
+  //   if (!isPlansLoad && clients.length >= 0) {
+  //     console.log(isPlansLoad)
+  //     loadPlans();
+  //     setIsPlanLoad(true)
+  //   }
+
+  // }, [clients])
   useEffect(() => {
     loadClients();
   }, []);
-  const loadPlans = async () => {
+  const loadPlans = async (clients: Client[]) => {
     try {
       const response = await getPlans();
       setPlans(response.data)
       // setClients()
+      // console.log(response.data)
       const cl = clients.map(client => {
         const activePlan = response.data.filter((plan: any) =>
           client.activePlan && plan.id === client.activePlan[0].plan_id
         )
         return { ...client, plan_title: activePlan ? activePlan[0].title : null }
       })
+      console.log("CLIENTS: ", cl)
       setClients(cl)
 
     } catch (error) {
@@ -54,7 +61,8 @@ function Clients() {
   const loadClients = async () => {
     try {
       const response = await getClients();
-      setClients(response.data);
+      console.log(response.data)
+      loadPlans(response.data)
     } catch (error) {
       toast.error('Failed to load clients');
     }
@@ -78,11 +86,22 @@ function Clients() {
     console.log(formData)
     try {
       if (editingId) {
-        await updateClient(editingId, formData);
-        toast.success('Client updated successfully');
+        const updatedClient = await updateClient(editingId, formData);
+        if (updatedClient.status == 200) {
+          toast.success('Client updated successfully');
+        } else {
+          toast.error(updatedClient.data);
+        }
       } else {
-        await createClient(formData);
-        toast.success('Client created successfully');
+        const createdClient = await createClient(formData);
+        if (createdClient.status == 201) {
+
+          toast.success('Client created successfully');
+        }
+        else {
+          toast.error('Client created successfully');
+
+        }
       }
       setIsModalOpen(false);
       loadClients();

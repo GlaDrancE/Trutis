@@ -34,7 +34,7 @@ export const deleteAgent = (id: string) => api.delete(`/agents/${id}`);
 
 // Clients
 export const getClients = () => api.get("/clients");
-export const createClient = (data: any) => { console.log(data); api.post("/clients", data, { headers: { 'Content-Type': 'multipart/form-data' } }); }
+export const createClient = (data: Omit<Client, "id" | "created_at">): Promise<any> => { return api.post("/clients", data, { headers: { 'Content-Type': 'multipart/form-data' } }); }
 export const updateClient = (id: string, data: Partial<Client>) =>
   api.put(`/clients/${id}`, data);
 export const deleteClient = (id: string) => api.delete(`/clients/${id}`);
