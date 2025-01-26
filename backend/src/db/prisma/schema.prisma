@@ -17,7 +17,6 @@ model Admin {
   id        String   @id @default(cuid())
   email     String   @unique
   password  String
-  name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -35,22 +34,6 @@ model Agent {
   updatedAt          DateTime       @updatedAt
   AgentSales         Sales[]
   AgentClients       AgentClients[]
-}
-
-model Clients {
-  id             String           @id @default(uuid())
-  shop_name      String
-  owner_name     String
-  address        String
-  phone          String
-  email          String           @unique
-  logo           String
-  googleAPI      String
-  password       String
-  ShopSales      Sales[]
-  AgentClients   AgentClients[]
-  ClientPlan     ClientPlans?
-  ClientPayments ClientPayments[]
 }
 
 model Sales {
@@ -76,24 +59,41 @@ model AgentClients {
   updatedAt DateTime @updatedAt
 }
 
+model Clients {
+  id             String           @id @default(uuid())
+  shop_name      String
+  owner_name     String
+  address        String
+  phone          String
+  email          String           @unique
+  logo           String
+  googleAPI      String
+  password       String
+  ShopSales      Sales[]
+  AgentClients   AgentClients[]
+  ClientPlan     ClientPlans[]
+  ClientPayments ClientPayments[]
+}
+
 model ClientPlans {
   id        String   @id @default(uuid())
-  client_id String   @unique
+  client_id String
   client    Clients  @relation(fields: [client_id], references: [id])
-  plan_id   String   @unique
   plan      Plans    @relation(fields: [plan_id], references: [id])
+  plan_id   String
+  isActive  Boolean
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Plans {
-  id          String       @id @default(uuid())
+  id          String        @id @default(uuid())
   title       String
   price       String
   level       Int
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  ClientPlans ClientPlans?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  ClientPlans ClientPlans[]
 }
 
 model ClientPayments {

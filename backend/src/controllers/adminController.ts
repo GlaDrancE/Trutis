@@ -45,14 +45,14 @@ export const AdminSignup = async (
   res: Response
 ): Promise<Response | void> => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).send("Invalid Request");
     }
     const data = {
       email,
       password,
-      name,
+      // name,
     };
     const validateData = Validator.validateAdmin(data);
     if (!validateData) {
@@ -62,7 +62,7 @@ export const AdminSignup = async (
       data: {
         email: email,
         password: await bcrypt.hash(password, 10),
-        name: name,
+        // name: name,
       },
     });
     if (!newUser) {

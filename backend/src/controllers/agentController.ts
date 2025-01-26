@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../db/prisma";
+import bcrypt from 'bcryptjs'
 import { Validator } from "../middlewares/validator";
 export const CreateAgent = async (req: Request, res: Response) => {
   try {
@@ -28,7 +29,7 @@ export const CreateAgent = async (req: Request, res: Response) => {
       data: {
         name,
         email,
-        password,
+        password: await bcrypt.hash(password, 10),
         address,
         phone,
         profile,
@@ -48,7 +49,7 @@ export const DeleteAgent = async (req: Request, res: Response) => {
     if (!id) {
       return res.status(400).send("Invalid Request");
     }
-    
+
     const agent = await prisma.agent.delete({
       where: {
         id: id,
@@ -65,15 +66,15 @@ export const DeleteAgent = async (req: Request, res: Response) => {
 };
 
 
-export const UpdateAgent = async (req: Request, res: Response) =>{
+export const UpdateAgent = async (req: Request, res: Response) => {
   try {
-    const {id} = req.params;
+    const { id } = req.params;
     const { name, email, password, address, phone, type_of_employment, profile } = req.body;
     if (!name || !email || !password || !address || !phone || !type_of_employment) {
       return res.status(400).send("Invalid Request");
     }
     console.log(name)
-    if(!id){
+    if (!id) {
       return res.status(400).send("Invalid Request")
     }
     const data = {
@@ -103,10 +104,10 @@ export const UpdateAgent = async (req: Request, res: Response) =>{
         type_of_employment,
       },
     })
-    res.status(200).json({msg: "Updated Successfully", ...updateAgent})
+    res.status(200).json({ msg: "Updated Successfully", ...updateAgent })
   } catch (error) {
-   console.log(error)
-   res.status(500).send("Internal Server Error") 
+    console.log(error)
+    res.status(500).send("Internal Server Error")
   }
 }
 

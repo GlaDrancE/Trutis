@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { UserPlus, Edit2, Trash2, Camera, Plus } from 'lucide-react';
 import { getClients, createClient, updateClient, deleteClient, getPlans } from '../services/api';
 import toast from 'react-hot-toast';
@@ -9,6 +9,7 @@ function Clients() {
   const [plans, setPlans] = useState<Plans[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [profile, setProfile] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState('');
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<Client>({
@@ -20,18 +21,30 @@ function Clients() {
     address: '',
     plan_id: '',
     googleAPI: '',
-    logo: '',
+    logo: null,
   });
   const [editingId, setEditingId] = useState<string | null | undefined>(null);
 
   useEffect(() => {
+    if (clients.length > 0 && plans.length <= 0) {
+      loadPlans();
+    }
+  }, [clients, plans])
+  useEffect(() => {
     loadClients();
-    loadPlans();
   }, []);
   const loadPlans = async () => {
     try {
       const response = await getPlans();
       setPlans(response.data)
+      // setClients()
+      const cl = clients.map(client => {
+        const activePlan = response.data.filter((plan: any) =>
+          client.activePlan && plan.id === client.activePlan[0].plan_id
+        )
+        return { ...client, plan_title: activePlan ? activePlan[0].title : null }
+      })
+      setClients(cl)
 
     } catch (error) {
       toast.error('Failed to load subscription plans');
@@ -53,8 +66,8 @@ function Clients() {
       const img = e.target.files[0]
       const reader = new FileReader();
       reader.readAsDataURL(img)
+      setFormData(prev => ({ ...prev, logo: img }))
       reader.onloadend = () => {
-        setFormData({ ...formData, logo: reader.result as string })
         setProfile(reader.result as string)
       }
     }
@@ -62,6 +75,7 @@ function Clients() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(formData)
     try {
       if (editingId) {
         await updateClient(editingId, formData);
@@ -110,30 +124,33 @@ function Clients() {
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow">
-        <table className="min-w-full">
+      <div className="bg-white rounded-lg shadow overflow-x-auto">
+        <table className="min-w-full max-w-full ">
           <thead>
             <tr className="border-b">
-              <th className="px-6 py-3 text-left">Shop Name</th>
-              <th className="px-6 py-3 text-left">Owner Name</th>
-              <th className="px-6 py-3 text-left">Email</th>
-              <th className="px-6 py-3 text-left">Phone</th>
-              <th className="px-6 py-3 text-left">Address</th>
-              <th className="px-6 py-3 text-left">Logo</th>
-              <th className="px-6 py-3 text-left">Google API</th>
+              <th className="px-6 py-3 text-left text-nowrap">Shop Name</th>
+              <th className="px-6 py-3 text-left text-nowrap">Owner Name</th>
+              <th className="px-6 py-3 text-left text-nowrap">Email</th>
+              <th className="px-6 py-3 text-left text-nowrap">Phone</th>
+              <th className="px-6 py-3 text-left text-nowrap min-w-96">Address</th>
+              <th className="px-6 py-3 text-left text-nowrap">Logo</th>
+              <th className="px-6 py-3 text-left text-nowrap">Selected Plan</th>
+              <th className="px-6 py-3 text-left text-nowrap">Google API</th>
 
               <th className="px-6 py-3 text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {clients.map((client) => (
+            {plans && clients.map((client) => (
               <tr key={client.id} className="border-b hover:bg-gray-50">
                 <td className="px-6 py-4">{client.shop_name}</td>
                 <td className="px-6 py-4">{client.owner_name}</td>
                 <td className="px-6 py-4">{client.email}</td>
                 <td className="px-6 py-4">{client.phone}</td>
                 <td className="px-6 py-4">{client.address}</td>
-                <td className="px-6 py-4">{'TODO: logo'}</td>
+                <td className="">
+                  <div className='w-[3rem] h-[3rem] overflow-hidden rounded-full'><img src={client.logo} alt="" className='w-full h-full object-cover' /></div></td>
+                <td className="px-6 py-4">{client.plan_title}</td>
                 <td className="px-6 py-4">{client.googleAPI}</td>
                 <td className="px-6 py-4">
                   <button
@@ -145,7 +162,7 @@ function Clients() {
                         phone: client.phone,
                         address: client.address,
                         googleAPI: client.googleAPI,
-                        logo: 'TODO src',
+                        logo: client.logo,
                       });
                       setEditingId(client.id);
                       setIsModalOpen(true);
@@ -175,14 +192,14 @@ function Clients() {
             </h2>
             <form onSubmit={handleSubmit}>
               <div className='mb-4'>
-                <label className='relative w-32 h-32 bg-gray-300 flex items-center justify-center rounded-full mx-auto cursor-pointer' htmlFor='shop_logo'>
+                <label className='relative w-32 h-32 bg-gray-300 flex items-center justify-center rounded-full mx-auto cursor-pointer' htmlFor='logo'>
                   {formData.logo != '' ? <img src={profile} className='w-full h-full object-cover rounded-full' /> : <><Plus />
                     <span className='absolute -bottom-0 -right-0 rounded-full bg-black text-white p-2'>
                       <Camera className='w-4 h-4' />
                     </span></>}
 
                 </label>
-                <input type="file" name="shop_logo" id="shop_logo" onChange={(e) => handleFileChange(e)} hidden />
+                <input type="file" name="logo" id="logo" onChange={(e) => handleFileChange(e)} className='hidden' accept='image/*' />
               </div>
               <div className="mb-4">
                 <label className="block text-gray-700 mb-2">Shop Name</label>
@@ -200,9 +217,9 @@ function Clients() {
                 <label className="block text-gray-700 mb-2">Owner Name</label>
                 <input
                   type="text"
-                  value={formData.shop_name}
+                  value={formData.owner_name}
                   onChange={(e) =>
-                    setFormData({ ...formData, shop_name: e.target.value })
+                    setFormData({ ...formData, owner_name: e.target.value })
                   }
                   className="w-full p-2 border rounded"
                   required
@@ -269,9 +286,9 @@ function Clients() {
                 <label className="block text-gray-700 mb-2">Google API</label>
                 <input
                   type="text"
-                  value={formData.phone}
+                  value={formData.googleAPI}
                   onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
+                    setFormData({ ...formData, googleAPI: e.target.value })
                   }
                   className="w-full p-2 border rounded"
                   required

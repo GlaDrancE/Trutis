@@ -1,9 +1,11 @@
 import { RequestHandler, Router } from 'express'
-import { GetClients, SubPlans } from '../controllers/clientController';
-import multer from 'multer';
+import { CreateClient, DeleteClient, GetClients, SubPlans, UpdateClient } from '../controllers/clientController';
+import { upload } from '../utils/multer'
 const clientRoutes = Router();
 
-const upload = multer()
 clientRoutes.get('/clients', GetClients as RequestHandler)
-clientRoutes.get('/clients/subscription-plans', upload.single('logo'), SubPlans as RequestHandler)
+clientRoutes.get('/clients/subscription-plans', SubPlans as RequestHandler)
+clientRoutes.post('/clients', upload.single('logo'), CreateClient as RequestHandler)
+clientRoutes.put('/clients/:id', upload.single('logo'), UpdateClient as RequestHandler)
+clientRoutes.delete('/clients/:id', DeleteClient as RequestHandler)
 export default clientRoutes;
