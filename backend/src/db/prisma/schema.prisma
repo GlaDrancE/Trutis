@@ -74,6 +74,7 @@ model Clients {
   AgentClients   AgentClients[]
   ClientPlan     ClientPlans[]
   ClientPayments ClientPayments[]
+  ClientCoupon   CouponClients[]
 }
 
 model ClientPlans {
@@ -107,6 +108,40 @@ model ClientPayments {
   status         String   @default("pending") // "completed", "pending", "failed"
   invoice_id     String?
   transaction_id String?
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model CouponClients {
+  id        String   @id @default(uuid())
+  client_id String
+  coupon_id String
+  is_used   Boolean
+  used_at   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Coupon    Coupon[]
+  Clients   Clients  @relation(fields: [client_id], references: [id])
+}
+
+model Coupon {
+  id            String         @id @default(uuid())
+  code          String
+  discountType  CouponCodeType
+  validFrom     DateTime
+  validTill     DateTime
+  maxDiscount   Int?
+  minOrderValue Int?
+  discountValue Int
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  CouponClients   CouponClients? @relation(fields: [couponClientsId], references: [id])
+  couponClientsId String?
+}
+
+enum CouponCodeType {
+  Fixed
+  Discount
 }

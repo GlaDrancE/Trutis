@@ -9,7 +9,7 @@ export const GetClients = async (req: Request, res: Response): Promise<Response 
     try {
         const clients = await prisma.clients.findMany();
         const clientPlan = await prisma.clientPlans.findMany()
-        const enrichedClients = clients.map((client:any) => {
+        const enrichedClients = clients.map((client: any) => {
             const activePlan = clientPlan.filter((cp: any) => client.id === cp.client_id && cp.isActive)
             return {
                 ...client,
@@ -66,13 +66,22 @@ export const CreateClient = async (req: Request, res: Response): Promise<Respons
         if (!validateData) {
             return res.status(400).send("Invalid Request");
         }
-        const plan = await prisma.plans.findUnique({
+        const plan = await prisma.plans.findFirst({
             where: {
                 id: plan_id
             }
         })
+        console.log(plan)
         if (!plan) {
             return res.status(404).send("Subscription Plan not found")
+        }
+        const existingUser = await prisma.clients.findFirst({
+            where: {
+                email: email,
+            }
+        })
+        if (existingUser) {
+            return res.status(400).send("User already exists")
         }
         const newClient = await prisma.clients.create({
             data: {
@@ -157,7 +166,6 @@ export const UpdateClient = async (req: Request, res: Response): Promise<Respons
                 googleAPI: googleAPI
             },
         });
-        console.log(id, plan_id)
         const clientPlan = await prisma.clientPlans.findFirst(
             {
                 where: {
@@ -166,7 +174,6 @@ export const UpdateClient = async (req: Request, res: Response): Promise<Respons
                 }
             }
         )
-        console.log(clientPlan)
         if (!clientPlan) {
             await prisma.clientPlans.create({
                 data: {
