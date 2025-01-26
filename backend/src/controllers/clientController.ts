@@ -9,8 +9,8 @@ export const GetClients = async (req: Request, res: Response): Promise<Response 
     try {
         const clients = await prisma.clients.findMany();
         const clientPlan = await prisma.clientPlans.findMany()
-        const enrichedClients = clients.map(client => {
-            const activePlan = clientPlan.filter(cp => client.id === cp.client_id && cp.isActive)
+        const enrichedClients = clients.map((client:any) => {
+            const activePlan = clientPlan.filter((cp: any) => client.id === cp.client_id && cp.isActive)
             return {
                 ...client,
                 activePlan: activePlan
