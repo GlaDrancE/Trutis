@@ -3,11 +3,16 @@ import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import prisma from "../db/prisma";
 import { Validator } from "../middlewares/validator";
+import { generateRandom } from "../utils/generateRand";
 
-const JWT_SECRET = process.env.JWT_SECRET || null;
-export const AdminLogin = async (
+
+interface ReqRes {
   req: Request,
   res: Response
+}
+const JWT_SECRET = process.env.JWT_SECRET || null;
+export const AdminLogin = async (
+  req: Request, res: Response
 ): Promise<Response | void> => {
   try {
     const { email, password } = req.body;
@@ -41,8 +46,7 @@ export const AdminLogin = async (
 };
 
 export const AdminSignup = async (
-  req: Request,
-  res: Response
+  req: Request, res: Response
 ): Promise<Response | void> => {
   try {
     const { email, password } = req.body;
@@ -74,3 +78,29 @@ export const AdminSignup = async (
     res.status(500).send("Internal Server Error");
   }
 };
+
+
+
+
+export const GenerateQRCode = async (req: Request, res: Response): Promise<Response | void> => {
+  try {
+    const { id } = req.body;
+    if (!id) {
+      return res.status(400).send("Invalid request")
+    }
+    const privateId = id + generateRandom(4)
+    const client = await prisma.qRCodes.create({
+      data: {
+        public_key: id,
+        private_key: privateId,
+      }
+    })
+    if (!client) {
+      return res.status(500).send("Something went wrong, QR is not generated")
+    }
+    console.log(client)
+    res.status(201).send("QR Code generated")
+  } catch (error) {
+    res.status(500).send("Internal Server REror")
+  }
+}

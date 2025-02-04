@@ -5,6 +5,7 @@ import { json } from "body-parser";
 import authRoutes from "./routes/authRoutes";
 import agentRoutes from "./routes/agentRoutes";
 import clientRoutes from "./routes/clientRoutes";
+import adminRoutes from "./routes/adminRoutes";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,6 +20,7 @@ app.use(
 
 app.use("/api/auth", authRoutes);
 app.use("/api", agentRoutes)
+app.use("/api", adminRoutes)
 app.use("/api", clientRoutes)
 
 app.listen(PORT, () => {

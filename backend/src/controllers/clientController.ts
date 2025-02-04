@@ -3,7 +3,8 @@ import prisma from "../db/prisma";
 import bcrypt from "bcryptjs";
 import { Validator } from "../middlewares/validator";
 import { CloudinaryUpload } from "../utils/cloudinary";
-
+import { generateRandom } from "../utils/generateRand";
+import { client } from '../utils/redis';
 // Fetch all clients
 export const GetClients = async (req: Request, res: Response): Promise<Response | void> => {
     try {
@@ -16,13 +17,15 @@ export const GetClients = async (req: Request, res: Response): Promise<Response 
                 activePlan: activePlan
             }
         })
+        // const redisClient = await client();
+        // redisClient.set('clients', JSON.stringify(enrichedClients))
         res.status(200).json(enrichedClients);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch clients' });
     }
 };
 
-// Create a new client
+
 export const CreateClient = async (req: Request, res: Response): Promise<Response | void> => {
     try {
         const {
@@ -71,7 +74,6 @@ export const CreateClient = async (req: Request, res: Response): Promise<Respons
                 id: plan_id
             }
         })
-        console.log(plan)
         if (!plan) {
             return res.status(404).send("Subscription Plan not found")
         }
@@ -83,9 +85,33 @@ export const CreateClient = async (req: Request, res: Response): Promise<Respons
         if (existingUser) {
             return res.status(400).send("User already exists")
         }
+        let AvailableQR = await prisma.qRCodes.findFirst({
+            where: {
+                client_id: null
+            }
+        });
+        if (!AvailableQR) { return res.status(404).send("QR Not Available ") }
+        console.log("AVAILABLE QRS: ", AvailableQR)
+        // console.log(AvailableQR)
+        // if (!AvailableQR) {
+        //     console.log("QR codes are not available")
+        //     console.log("Generating...");
+
+        //     const public_key = generateRandom(4);
+        //     const private_key = public_key + generateRandom(4);
+
+        //     AvailableQR = await prisma.qRCodes.create({
+        //         data: {
+        //             public_key: public_key,
+        //             private_key: private_key
+        //         }
+        //     })
+        // }
+
         const newClient = await prisma.clients.create({
             data: {
                 shop_name: shop_name,
+                qr_id: AvailableQR?.public_key,
                 owner_name: owner_name,
                 address: address,
                 phone: phone,
@@ -105,7 +131,15 @@ export const CreateClient = async (req: Request, res: Response): Promise<Respons
                 isActive: true
             }
         })
-        res.status(201).send("Client Created");
+        const qrUpdate = await prisma.qRCodes.update({
+            where: {
+                id: AvailableQR?.id
+            },
+            data: {
+                client_id: newClient.id
+            }
+        })
+        res.status(201).json({ msg: "Client Created", public_id: qrUpdate.public_key });
     } catch (error) {
         console.log(error)
         res.status(500).send("Internal Server Error");
@@ -243,5 +277,27 @@ export const SubPlans = async (req: Request, res: Response): Promise<Response | 
 
         console.log(error)
         res.status(500).send("Internal Server Error");
+    }
+}
+
+
+
+export const ClientForms = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).send("Invalid Request")
+        }
+        const client = await prisma.clients.findFirst({
+            where: {
+                qr_id: id
+            }
+        })
+        if (!client) {
+            return res.status(404).send("No Data Found");
+        }
+        return res.status(200).send(client)
+    } catch (error) {
+
     }
 }

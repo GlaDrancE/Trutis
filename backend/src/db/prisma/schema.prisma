@@ -63,6 +63,7 @@ model AgentClients {
 model Clients {
   id             String           @id @default(uuid())
   shop_name      String
+  qr_id          String?          @unique
   owner_name     String
   address        String
   phone          String
@@ -70,11 +71,20 @@ model Clients {
   logo           String
   googleAPI      String
   password       String
+  QRCodes        QRCodes?
   ShopSales      Sales[]
   AgentClients   AgentClients[]
   ClientPlan     ClientPlans[]
   ClientPayments ClientPayments[]
   ClientCoupon   CouponClients[]
+}
+
+model QRCodes {
+  id          String   @id @default(uuid())
+  public_key  String   @unique
+  private_key String   @unique
+  client_id   String?  @unique
+  Clients     Clients? @relation(fields: [client_id], references: [id])
 }
 
 model ClientPlans {
