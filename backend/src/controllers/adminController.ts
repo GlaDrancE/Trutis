@@ -84,7 +84,7 @@ export const AdminSignup = async (
 
 export const GenerateQRCode = async (req: Request, res: Response): Promise<Response | void> => {
   try {
-    const { id } = req.body;
+    const { id, amount } = req.body;
     if (!id) {
       return res.status(400).send("Invalid request")
     }
@@ -102,5 +102,18 @@ export const GenerateQRCode = async (req: Request, res: Response): Promise<Respo
     res.status(201).send("QR Code generated")
   } catch (error) {
     res.status(500).send("Internal Server REror")
+  }
+}
+
+export const GetQRCodes = async (req: Request, res: Response) => {
+  try {
+    const qrCodes = await prisma.qRCodes.findMany();
+    if (!qrCodes) {
+      return res.status(404).send("QR Codes not found")
+    }
+    res.status(200).json(qrCodes)
+  } catch (error) {
+    console.log(error)
+    res.status(500).send("Internal Server Error")
   }
 }

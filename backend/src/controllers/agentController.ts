@@ -125,3 +125,25 @@ export const ShowAgents = async (req: Request, res: Response) => {
     res.status(500).send("Internal Server Error");
   }
 };
+
+
+export const VerifyClient = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.body;
+    if (!id) {
+      return res.status(400).send("Something went wrong")
+    }
+    const clients = await prisma.clients.findFirst({
+      where: {
+        qr_id: id
+      }
+    })
+    if (!clients) {
+      return res.status(404).send("Data not found")
+    }
+    res.status(200).json(clients)
+
+  } catch (error) {
+    res.status(500).send("Internal server error")
+  }
+}

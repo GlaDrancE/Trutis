@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../db/prisma";
 import bcrypt from "bcryptjs";
+import Razorpay from 'razorpay'
 import { Validator } from "../middlewares/validator";
 import { CloudinaryUpload } from "../utils/cloudinary";
 import { generateRandom } from "../utils/generateRand";
@@ -299,5 +300,31 @@ export const ClientForms = async (req: Request, res: Response) => {
         return res.status(200).send(client)
     } catch (error) {
 
+        res.status(500).send("Internal server error")
+    }
+}
+
+export const CreatePaymentOrder = async (req: Request, res: Response) => {
+    const razorpay = new Razorpay({
+        key_id: 'rzp_test_OwTHyuNEPtrhN5',
+        key_secret: ''
+    })
+    const { amount } = req.body;
+
+    const options = {
+        amount: amount * 100,  // amount in paise
+        currency: 'INR',
+        receipt: 'receipt#1'
+    };
+
+    try {
+        const response = await razorpay.orders.create(options);
+        res.json({
+            id: response.id,
+            currency: response.currency,
+            amount: response.amount
+        });
+    } catch (error) {
+        res.status(500).send(error);
     }
 }

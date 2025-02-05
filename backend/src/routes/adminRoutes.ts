@@ -1,8 +1,9 @@
 import { Request, RequestHandler, Response, Router } from 'express'
-import { GenerateQRCode } from '../controllers/adminController';
+import { GenerateQRCode, GetQRCodes } from '../controllers/adminController';
 import Authenticator from '../middlewares/Authenticator';
 const adminRoutes = Router();
 
 adminRoutes.post("/qr-codes", Authenticator as RequestHandler, GenerateQRCode as RequestHandler)
+adminRoutes.get("/qr-codes", Authenticator as RequestHandler, GetQRCodes as RequestHandler)
 
 export default adminRoutes

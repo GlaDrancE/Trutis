@@ -1,0 +1,56 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="bg-gray-100">
+    <ActionBar title="Client Portal" class="bg-blue-600 text-white" />
+    
+    <ScrollView>
+        <StackLayout class="p-4 space-y-4">
+            <Label text="Register Your Shop" class="text-2xl font-bold text-center mb-4" />
+            
+            <GridLayout rows="auto, auto" columns="*" class="mb-4">
+                <Label text="Shop Name" class="text-gray-600" row="0" />
+                <TextField text="{{ shopName }}" hint="Enter shop name" class="input p-2 border rounded" row="1" />
+            </GridLayout>
+
+            <GridLayout rows="auto, auto" columns="*" class="mb-4">
+                <Label text="Owner Name" class="text-gray-600" row="0" />
+                <TextField text="{{ ownerName }}" hint="Enter owner name" class="input p-2 border rounded" row="1" />
+            </GridLayout>
+
+            <GridLayout rows="auto, auto" columns="*" class="mb-4">
+                <Label text="Address" class="text-gray-600" row="0" />
+                <TextView text="{{ address }}" hint="Enter address" class="input p-2 border rounded" row="1" />
+            </GridLayout>
+
+            <GridLayout rows="auto, auto" columns="*" class="mb-4">
+                <Label text="Phone" class="text-gray-600" row="0" />
+                <TextField text="{{ phone }}" hint="Enter phone number" keyboardType="phone" class="input p-2 border rounded" row="1" />
+            </GridLayout>
+
+            <GridLayout rows="auto, auto" columns="*" class="mb-4">
+                <Label text="Email" class="text-gray-600" row="0" />
+                <TextField text="{{ email }}" hint="Enter email" keyboardType="email" class="input p-2 border rounded" row="1" />
+            </GridLayout>
+
+            <GridLayout rows="auto, auto" columns="*" class="mb-4">
+                <Label text="Logo URL" class="text-gray-600" row="0" />
+                <TextField text="{{ logo }}" hint="Enter logo URL" class="input p-2 border rounded" row="1" />
+            </GridLayout>
+
+            <GridLayout rows="auto, auto" columns="*" class="mb-4">
+                <Label text="Google API Key" class="text-gray-600" row="0" />
+                <TextField text="{{ googleAPI }}" hint="Enter Google API key" class="input p-2 border rounded" row="1" />
+            </GridLayout>
+
+            <GridLayout rows="auto, auto" columns="*" class="mb-4">
+                <Label text="Password" class="text-gray-600" row="0" />
+                <TextField text="{{ password }}" hint="Enter password" secure="true" class="input p-2 border rounded" row="1" />
+            </GridLayout>
+
+            <Button text="Submit" tap="{{ onSubmit }}" class="bg-blue-600 text-white p-4 rounded-lg" />
+
+            <StackLayout visibility="{{ isResponseVisible ? 'visible' : 'collapsed' }}" class="p-4 bg-white rounded-lg">
+                <Label text="Response" class="font-bold mb-2" />
+                <Label text="{{ responseMessage }}" textWrap="true" class="text-gray-700" />
+            </StackLayout>
+        </StackLayout>
+    </ScrollView>
+</Page>

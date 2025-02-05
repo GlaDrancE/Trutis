@@ -1,5 +1,5 @@
 import { RequestHandler, Router } from "express";
-import { CreateAgent, DeleteAgent, ShowAgents, UpdateAgent } from "../controllers/agentController";
+import { CreateAgent, DeleteAgent, ShowAgents, UpdateAgent, VerifyClient } from "../controllers/agentController";
 import multer from "multer";
 import Authenticator from "../middlewares/Authenticator";
 const agentRoutes: Router = Router();
@@ -26,4 +26,5 @@ agentRoutes.put(
   Authenticator as RequestHandler,
   UpdateAgent as RequestHandler
 )
+agentRoutes.post("/agents/verifyClient", VerifyClient as RequestHandler)
 export default agentRoutes;

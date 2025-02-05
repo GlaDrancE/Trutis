@@ -79,11 +79,18 @@ model Clients {
   ClientCoupon   CouponClients[]
 }
 
+enum QRCodesStatus {
+  Active
+  Inactive
+}
+
 model QRCodes {
   id          String   @id @default(uuid())
   public_key  String   @unique
   private_key String   @unique
   client_id   String?  @unique
+  // status      QRCodesStatus
+  // amount      Int
   Clients     Clients? @relation(fields: [client_id], references: [id])
 }
 
