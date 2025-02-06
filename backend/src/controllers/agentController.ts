@@ -1,7 +1,56 @@
 import { Request, Response } from "express";
 import prisma from "../db/prisma";
 import bcrypt from 'bcryptjs'
+
+import jwt from 'jsonwebtoken';
 import { Validator } from "../middlewares/validator";
+
+
+
+// Make sure TOKEN_SECRET is defined in your environment
+const tokenSecret = process.env.JWT_SECRET || null;
+if (!tokenSecret) {
+  throw new Error('TOKEN_SECRET environment variable is not defined.');
+}
+export const AgentLogin = async (req: Request, res: Response) => {
+
+  try {
+    const { email, password } = req.body;
+
+    // Validate required fields
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required.' });
+    }
+
+    // Find the agent by email
+    const agent = await prisma.agent.findUnique({
+      where: { email }
+    });
+
+    if (!agent) {
+      return res.status(404).json({ error: 'Agent not found.' });
+    }
+
+    // Validate the password using bcrypt (assuming agent.password is hashed)
+    const isPasswordValid = await bcrypt.compare(password, agent.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid credentials.' });
+    }
+
+    // Generate a JWT token
+    const token = jwt.sign(
+      { id: agent.id, email: agent.email },
+      tokenSecret,
+      { expiresIn: '1h' }
+    );
+
+    res.json({ token });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+}
+
 export const CreateAgent = async (req: Request, res: Response) => {
   try {
     const { name, email, password, address, phone, type_of_employment, profile } = req.body;
