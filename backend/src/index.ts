@@ -19,9 +19,9 @@ app.use(
 );
 
 app.use("/api/auth", authRoutes);
-app.use("/api", agentRoutes)
-app.use("/api", adminRoutes)
-app.use("/api", clientRoutes)
+app.use("/api", agentRoutes);
+app.use("/api", adminRoutes);
+app.use("/api", clientRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
